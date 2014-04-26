@@ -12,6 +12,7 @@ time_started = time.gmtime()
 time_paused = time.gmtime() # not relevant as will be updated when timer actually paused
 timer_paused = True
 pause_iterations = 0 # see below for explanation
+resolution = (1024, 576)
 
 def update_clock():
 	global time_elapsed
@@ -23,7 +24,7 @@ def update_clock():
 	minutes_elapsed = time.strftime("%M", time.gmtime(total_seconds_elapsed))
 	seconds_elapsed = time.strftime("%S", time.gmtime(total_seconds_elapsed))
 	time_elapsed = str(int(hours_elapsed) * 60 + int(minutes_elapsed)) + ":" + seconds_elapsed
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+	draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 	clock_update_id = video.after(1000, update_clock)
 	
 def timer_toggle():
@@ -79,7 +80,9 @@ def resume_timer():
 		timer_paused = False
 	
 
-def draw_scorebox(time_elapsed, home, guest, hscore, gscore, extra_text):
+def draw_video(time_elapsed, home, guest, hscore, gscore, extra_text):
+        w.create_rectangle(0, 0, resolution[0], resolution[1], fill="#00ff00")
+
         text = time_elapsed + " | " + home + ": " + str(hscore) + " | " + guest + ": " + str(gscore) + " " + extra_text
         boxlength = int(len(text) * 6.9)
 	w.create_rectangle(50, 25, (50 + boxlength), 50, fill="light blue", outline="light blue")
@@ -98,37 +101,32 @@ def change_score(home, plus):
 			homescore -= 1
 		else:
 			guestscore -= 1
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+	draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 		
 def set_guest(name):
 	global guestname
 	guestname = name
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+	draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 	
 def set_home(name):
 	global homename
 	homename = name
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+	draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 
 def set_extra_text(text):
 	global extra_text
 	extra_text = text
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+	draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 	
 # Set Windows
 video = Tk()
 admin = Tk()
 
 # Initialise Canvas
-w = Canvas(video, width=720, height=480)
+w = Canvas(video, width=resolution[0], height=resolution[1])
 w.pack()
 
-w.create_line(0, 0, 200, 100)
-w.create_line(0, 100, 200, 0, fill="red", dash=(4, 4))
-
-w.create_rectangle(0, 0, 720, 480, fill="#00ff00")
-
-draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 
 # Buttons
 # Change Scores
