@@ -7,6 +7,7 @@ homescore = 0
 guestname = "GUEST"
 guestscore = 0
 time_elapsed = "0:00"
+extra_text = ""
 time_started = time.gmtime()
 time_paused = time.gmtime() # not relevant as will be updated when timer actually paused
 timer_paused = True
@@ -22,7 +23,7 @@ def update_clock():
 	minutes_elapsed = time.strftime("%M", time.gmtime(total_seconds_elapsed))
 	seconds_elapsed = time.strftime("%S", time.gmtime(total_seconds_elapsed))
 	time_elapsed = str(int(hours_elapsed) * 60 + int(minutes_elapsed)) + ":" + seconds_elapsed
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore)
+	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 	clock_update_id = video.after(1000, update_clock)
 	
 def timer_toggle():
@@ -78,14 +79,13 @@ def resume_timer():
 		timer_paused = False
 	
 
-def draw_scorebox(time_elapsed, home, guest, hscore, gscore):
-	w.create_rectangle(50, 25, 300, 50, fill="light blue", outline="light blue")
-	w.create_text(60, 40, text=time_elapsed + " | " + home + ": " + str(hscore) + " | " + guest + ": " + str(gscore), anchor="w")
+def draw_scorebox(time_elapsed, home, guest, hscore, gscore, extra_text):
+        text = time_elapsed + " | " + home + ": " + str(hscore) + " | " + guest + ": " + str(gscore) + " " + extra_text
+        boxlength = int(len(text) * 6.9)
+	w.create_rectangle(50, 25, (50 + boxlength), 50, fill="light blue", outline="light blue")
+	w.create_text(60, 40, text=text, anchor="w")
 
 def change_score(home, plus):
-	global time_elapsed
-	global homename
-	global guestname
 	global homescore
 	global guestscore
 	if plus:
@@ -98,23 +98,22 @@ def change_score(home, plus):
 			homescore -= 1
 		else:
 			guestscore -= 1
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore)
+	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 		
 def set_guest(name):
-	global homename
 	global guestname
-	global homescore
-	global guestscore
 	guestname = name
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore)
+	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 	
 def set_home(name):
 	global homename
-	global guestname
-	global homescore
-	global guestscore
 	homename = name
-	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore)
+	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+
+def set_extra_text(text):
+	global extra_text
+	extra_text = text
+	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 	
 # Set Windows
 video = Tk()
@@ -129,7 +128,7 @@ w.create_line(0, 100, 200, 0, fill="red", dash=(4, 4))
 
 w.create_rectangle(0, 0, 720, 480, fill="#00ff00")
 
-draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore)
+draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 
 # Buttons
 # Change Scores
@@ -150,17 +149,28 @@ e_hteam = Entry(admin)
 b_set_hteam = Button(admin, text="Set Home", command=lambda: set_home(e_hteam.get()))
 e_gteam = Entry(admin)
 b_set_gteam = Button(admin, text="Set Guest", command=lambda: set_guest(e_gteam.get()))
-b_toggle_timer = Button(admin, text="Start/Pause Timer", command=lambda: timer_toggle())
-e_timer_minutes = Entry(admin)
-b_set_timer = Button(admin, text="Set Timer to Minute", command=lambda: set_timer(e_timer_minutes.get()))
 
 e_hteam.pack()
 b_set_hteam.pack()
 e_gteam.pack()
 b_set_gteam.pack()
+
+#Timer
+b_toggle_timer = Button(admin, text="Start/Pause Timer", command=lambda: timer_toggle())
+e_timer_minutes = Entry(admin)
+b_set_timer = Button(admin, text="Set Timer to Minute", command=lambda: set_timer(e_timer_minutes.get()))
+
 b_toggle_timer.pack()
 b_set_timer.pack()
 e_timer_minutes.pack()
 
-#run
+# Extra Text
+e_extra_text = Entry(admin)
+b_set_text = Button(admin, text="Set Extra Text", command=lambda: set_extra_text(e_extra_text.get()))
+
+b_set_text.pack()
+e_extra_text.pack()
+
+
+# run
 mainloop()
