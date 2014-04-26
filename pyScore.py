@@ -15,16 +15,33 @@ pause_iterations = 0 # see below for explanation
 def update_clock():
 	global time_elapsed
 	global clock_update_id
-	seconds_time = calendar.timegm(time.gmtime())
+	seconds_time = calendar.timegm(time.gmtime()) # now since epoch
 	seconds_started = calendar.timegm(time_started)
-	epoch_seconds_elapsed = seconds_time - seconds_started
-	hours_elapsed = time.strftime("%H", time.gmtime(epoch_seconds_elapsed))
-	minutes_elapsed = time.strftime("%M", time.gmtime(epoch_seconds_elapsed))
-	seconds_elapsed = time.strftime("%S", time.gmtime(epoch_seconds_elapsed))
+	total_seconds_elapsed = seconds_time - seconds_started
+	hours_elapsed = time.strftime("%H", time.gmtime(total_seconds_elapsed))
+	minutes_elapsed = time.strftime("%M", time.gmtime(total_seconds_elapsed))
+	seconds_elapsed = time.strftime("%S", time.gmtime(total_seconds_elapsed))
 	time_elapsed = str(int(hours_elapsed) * 60 + int(minutes_elapsed)) + ":" + seconds_elapsed
 	draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore)
 	clock_update_id = video.after(1000, update_clock)
-
+	
+def timer_toggle():
+	global timer_paused
+	if timer_paused:
+		resume_timer()
+	else:
+		pause_timer()
+		
+def set_timer(minutes):
+	global time_started
+	if not minutes:
+		minutes = 0
+	seconds_time = calendar.timegm(time.gmtime()) # since epoch
+	time_started = time.gmtime(seconds_time - (int(minutes) * 60))
+	# toggle on/off to update display
+	timer_toggle()
+	timer_toggle()
+	
 def start_timer():
 	global time_elapsed
 	global time_started
@@ -133,15 +150,17 @@ e_hteam = Entry(admin)
 b_set_hteam = Button(admin, text="Set Home", command=lambda: set_home(e_hteam.get()))
 e_gteam = Entry(admin)
 b_set_gteam = Button(admin, text="Set Guest", command=lambda: set_guest(e_gteam.get()))
-b_resume_timer = Button(admin, text="Start/Resume Timer", command=lambda: resume_timer())
-b_pause_timer = Button(admin, text="Pause Timer", command=lambda: pause_timer())
+b_toggle_timer = Button(admin, text="Start/Pause Timer", command=lambda: timer_toggle())
+e_timer_minutes = Entry(admin)
+b_set_timer = Button(admin, text="Set Timer to Minute", command=lambda: set_timer(e_timer_minutes.get()))
 
 e_hteam.pack()
 b_set_hteam.pack()
 e_gteam.pack()
 b_set_gteam.pack()
-b_resume_timer.pack()
-b_pause_timer.pack()
+b_toggle_timer.pack()
+b_set_timer.pack()
+e_timer_minutes.pack()
 
 #run
 mainloop()
