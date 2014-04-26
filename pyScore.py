@@ -101,8 +101,8 @@ def set_home(name):
 	
 # Set Windows
 video = Tk()
-score = Tk()
-teams = Tk()
+admin = Tk()
+
 # Initialise Canvas
 w = Canvas(video, width=720, height=480)
 w.pack()
@@ -116,11 +116,11 @@ draw_scorebox(time_elapsed, homename, guestname, homescore, guestscore)
 
 # Buttons
 # Change Scores
-buttons = Frame(score)
-b_home_plus = Button(score, text="Home +", command=lambda: change_score(True, True))
-b_home_minus = Button(score, text="Home -", command=lambda: change_score(True, False))
-b_guest_plus = Button(score, text="Guest +", command=lambda: change_score(False, True))
-b_guest_minus = Button(score, text="Guest -", command=lambda: change_score(False, False))
+buttons = Frame(admin)
+b_home_plus = Button(admin, text="Home +", command=lambda: change_score(True, True))
+b_home_minus = Button(admin, text="Home -", command=lambda: change_score(True, False))
+b_guest_plus = Button(admin, text="Guest +", command=lambda: change_score(False, True))
+b_guest_minus = Button(admin, text="Guest -", command=lambda: change_score(False, False))
 
 b_home_plus.pack()
 b_home_minus.pack()
@@ -128,13 +128,13 @@ b_guest_plus.pack()
 b_guest_minus.pack()
 
 # Team Names
-team = Frame(teams)
-e_hteam = Entry(teams)
-b_set_hteam = Button(teams, text="Set Home", command=lambda: set_home(e_hteam.get()))
-e_gteam = Entry(teams)
-b_set_gteam = Button(teams, text="Set Guest", command=lambda: set_guest(e_gteam.get()))
-b_resume_timer = Button(teams, text="Start/Resume Timer", command=lambda: resume_timer())
-b_pause_timer = Button(teams, text="Pause Timer", command=lambda: pause_timer())
+team = Frame(admin)
+e_hteam = Entry(admin)
+b_set_hteam = Button(admin, text="Set Home", command=lambda: set_home(e_hteam.get()))
+e_gteam = Entry(admin)
+b_set_gteam = Button(admin, text="Set Guest", command=lambda: set_guest(e_gteam.get()))
+b_resume_timer = Button(admin, text="Start/Resume Timer", command=lambda: resume_timer())
+b_pause_timer = Button(admin, text="Pause Timer", command=lambda: pause_timer())
 
 e_hteam.pack()
 b_set_hteam.pack()
