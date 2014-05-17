@@ -7,9 +7,6 @@ import SocketServer
 
 #global variable declarations
 
-## Communication queue
-exitFlag = 0
-
 homename = "HOME"
 homescore = 0
 guestname = "GUEST"
@@ -27,9 +24,8 @@ class server(threading.Thread):
     def __init__(self,):
         threading.Thread.__init__(self)
     def run(self):
-        print "Starting SERVER"
+        print "Starting SERVER on " + str(self.PORT)
         Handler = MyHandler
-
         httpd = SocketServer.TCPServer(("", self.PORT), Handler)
         httpd.serve_forever()
         print "Exiting SERVER"
@@ -43,18 +39,21 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             path, tmp = path.split('?', 1)
             qs = urlparse.parse_qs(tmp)
         print "Path: " + path
+        timer_set = ""
         dict_print = ""
+        scorechanged = False
         for key, value in qs.items():
             dict_print += "{} : {}".format(key, value) # for debug/log
-            dict_print += "<br />"
+            dict_print += "\n"
             if key == "homename":
                 set_home(value[0])
             if key == "guestname":
                 set_guest(value[0])
-            if key == "extra_text":
+            if key == "extratext":
                 set_extra_text(value[0])
             if key == "set_timer":
                 set_timer(value[0])
+                timer_set = value[0]
             if key == "timer_toggle":
                 if value[0] == "true":
                     timer_toggle()
@@ -62,19 +61,95 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 if value[0] == "add":
                     change_score(True, True)
                 if value[0] == "take":
-                    change_score(True, Ffalse)
+                    change_score(True, False)
+                scorechanged = True
             if key == "guestscore":
                 if value[0] == "add":
                     change_score(False, True)
                 if value[0] == "take":
                     change_score(False, False)
-            
+                scorechanged = True
+                
         print(dict_print)
 
         self.send_response(200, 'OK')
-        self.send_header('Content-type', 'html')
+        self.send_header('Content-type', 'text/html')
         self.end_headers()
-        html = "<html> <head><title> Hello World </title> </head> <body>you just changed " + dict_print + "</body> </html>"
+        #html = "<html> <head><title> Hello World </title> </head> <body>you just changed " + dict_print + "</body> </html>"
+        html = """
+        <!doctype html>
+        <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+                <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+                <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+                <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+                <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+                <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+                <title>PiCG DEV by Nik</title>
+            </head>
+            <body style="width:95%;margin-left:auto;margin-right:auto;">
+            <div class="page-header">
+              <h1>PyScore <small> A Python Score Board</small></h1>
+            </div>
+            """
+        if scorechanged:
+            html+="""
+            <div class="alert alert-success alert-dismissable">
+              <button type="button" class="close" data-dismiss="alert-success" aria-hidden="true">&times;</button>
+              <strong>Score changed!</strong> The new score is <strong>""" + str(homescore) + ":" + str(guestscore) + """</strong>
+            </div>
+            """
+        
+        html+="""
+            <div style="width:80%;margin-left:auto;margin-right:auto;text-align:center;" }>
+                <a class="btn btn-lg btn-default" href="?homescore=add">Home +</a>
+                <a class="btn btn-lg btn-default" href="?homescore=take">Home -</a>
+                <br /><br />
+                <a class="btn btn-lg btn-default" href="?guestscore=add">Guest +</a>
+                <a class="btn btn-lg btn-default" href="?guestscore=take">Guest -</a>
+                <br /><br />
+                <a class="btn btn-lg btn-default" href="?timer_toggle=true">Toggle Timer</a>
+            
+            <br /><br />
+            <form class="form-horizontal" role="form" action="" method="GET" style="text-align:left;">
+                <div class="form-group">
+                  <label for="homename" class="col-sm-2 control-label">Home Name</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="homename" name="homename" placeholder=""" + '"' + homename + '"' + """>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="guestname" class="col-sm-2 control-label">Guest Name</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="guestname" name="guestname" placeholder=""" + '"' +  guestname + '"' + """>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="extratext" class="col-sm-2 control-label">Extra Text</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" id="extratext" name="extratext" placeholder=""" + '"' +  extra_text + '"' + """>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                  </div>
+                </div>
+              </form>
+              <form class="form-inline" role="form" action="/" method="get">
+                <div class="form-group">
+                  <label class="sr-only" for="minutes">Minutes</label>
+                  <input type="number" class="form-control" id="minutes" name="set_timer" placeholder="" value=""" + '"' +  timer_set + '"' + """>
+                </div>
+                <button type="submit" class="btn btn-default">Set Timer</button>
+              </form>
+            </body>
+            </div>
+        </html>
+        """
         self.wfile.write(bytes(html))
 
     def log_request(self, code=None, size=None):
