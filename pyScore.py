@@ -8,9 +8,7 @@ import SocketServer
 #global variable declarations
 
 ## Communication queue
-commQueue = Queue.Queue()
 exitFlag = 0
-
 
 homename = "HOME"
 homescore = 0
@@ -38,16 +36,6 @@ class server(threading.Thread):
 
         
 class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    DUMMY_RESPONSE = """<html>
-    <head>
-    <title>Python Test</title>
-    </head>
-
-    <body>
-    Test page...success.
-    </body>
-    </html>
-    """
     def do_GET(self):
         qs = {}
         path = self.path
@@ -55,45 +43,45 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             path, tmp = path.split('?', 1)
             qs = urlparse.parse_qs(tmp)
         print "Path: " + path
+        dict_print = ""
         for key, value in qs.items():
-            print("{} : {}".format(key, value))
+            dict_print += "{} : {}".format(key, value) # for debug/log
+            dict_print += "<br />"
+            if key == "homename":
+                set_home(value[0])
+            if key == "guestname":
+                set_guest(value[0])
+            if key == "extra_text":
+                set_extra_text(value[0])
+            if key == "set_timer":
+                set_timer(value[0])
+            if key == "timer_toggle":
+                if value[0] == "true":
+                    timer_toggle()
+            if key == "homescore":
+                if value[0] == "add":
+                    change_score(True, True)
+                if value[0] == "take":
+                    change_score(True, Ffalse)
+            if key == "guestscore":
+                if value[0] == "add":
+                    change_score(False, True)
+                if value[0] == "take":
+                    change_score(False, False)
+            
+        print(dict_print)
 
         self.send_response(200, 'OK')
         self.send_header('Content-type', 'html')
         self.end_headers()
-        self.wfile.write(bytes(self.DUMMY_RESPONSE))
-        #self.wfile.write(bytes("<html> <head><title> Hello World </title> </head> <body>you just set homename to " + str(qs) + "</body> </html>", 'UTF-8'))
+        html = "<html> <head><title> Hello World </title> </head> <body>you just changed " + dict_print + "</body> </html>"
+        self.wfile.write(bytes(html))
 
     def log_request(self, code=None, size=None):
         print('Request')
 
     def log_message(self, format, *args):
         print('Message')
-
-
-class updater(threading.Thread):
-    def __init__(self,):
-        threading.Thread.__init__(self)
-        commQueue.put(lambda: timer_toggle()) # for testing
-        commQueue.put(lambda: set_extra_text("I am Niklas")) # for testing
-    def run(self):
-        print "Starting " + self.name
-        checkQueue()
-        print "Exiting " + self.name
-        
-## CLASS END ##        
-
-def checkQueue():
-    while TRUE:
-        if exitFlag:
-            thread.exit()
-        time.sleep(0.01)
-        if not commQueue.empty():
-            f = commQueue.get()
-            f()
-            print "Lambda Done"
-        #else:
-            #print "Queue empty"
 
 def update_clock():
 	global time_elapsed
@@ -253,10 +241,8 @@ e_extra_text.pack()
 #run
 
 # Create new threads
-updateThread = updater()
 serverThread = server()
 
 # Start new Threads
-updateThread.start()
 serverThread.start()
 mainloop()
