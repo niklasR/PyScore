@@ -3,10 +3,12 @@ import time, calendar
 import threading, Queue
 import SimpleHTTPServer, urlparse
 import SocketServer
+import socket
+
 
 
 #global variable declarations
-
+PORT = 8000
 homename = "HOME"
 homescore = 0
 guestname = "GUEST"
@@ -20,13 +22,12 @@ pause_iterations = 0 # see below for explanation
 resolution = (1024, 576)
 
 class server(threading.Thread):
-    PORT = 8000
     def __init__(self,):
         threading.Thread.__init__(self)
     def run(self):
-        print "Starting SERVER on " + str(self.PORT)
+        print "Starting SERVER on " + str(PORT)
         Handler = MyHandler
-        httpd = SocketServer.TCPServer(("", self.PORT), Handler)
+        httpd = SocketServer.TCPServer(("", PORT), Handler)
         httpd.serve_forever()
         print "Exiting SERVER"
 
@@ -83,6 +84,7 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+                <link rel="icon" href="data:;base64,=">
                 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
                 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
                 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
@@ -231,6 +233,9 @@ def draw_video(time_elapsed, home, guest, hscore, gscore, extra_text):
         boxlength = int(len(text) * 6.9)
 	w.create_rectangle(50, 25, (50 + boxlength), 50, fill="light blue", outline="light blue")
 	w.create_text(60, 40, text=text, anchor="w")
+        
+def draw_address():
+    w.create_text(20, (resolution[1]/2 - 20), font=("Consolas", 100, "bold"), text=(str(socket.gethostbyname(socket.gethostname())) + ":" + str(PORT)), anchor="w")
 
 def change_score(home, plus):
 	global homescore
@@ -271,6 +276,7 @@ w = Canvas(video, width=resolution[0], height=resolution[1])
 w.pack()
 
 draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
+draw_address()
 
 # Buttons
 # Change Scores
