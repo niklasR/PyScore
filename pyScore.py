@@ -1,7 +1,17 @@
 from Tkinter import *
 import time, calendar
+import threading, Queue
+import SimpleHTTPServer, urlparse
+import SocketServer
+
 
 #global variable declarations
+
+## Communication queue
+commQueue = Queue.Queue()
+exitFlag = 0
+
+
 homename = "HOME"
 homescore = 0
 guestname = "GUEST"
@@ -13,6 +23,77 @@ time_paused = time.gmtime() # not relevant as will be updated when timer actuall
 timer_paused = True
 pause_iterations = 0 # see below for explanation
 resolution = (1024, 576)
+
+class server(threading.Thread):
+    PORT = 8000
+    def __init__(self,):
+        threading.Thread.__init__(self)
+    def run(self):
+        print "Starting SERVER"
+        Handler = MyHandler
+
+        httpd = SocketServer.TCPServer(("", self.PORT), Handler)
+        httpd.serve_forever()
+        print "Exiting SERVER"
+
+        
+class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    DUMMY_RESPONSE = """<html>
+    <head>
+    <title>Python Test</title>
+    </head>
+
+    <body>
+    Test page...success.
+    </body>
+    </html>
+    """
+    def do_GET(self):
+        qs = {}
+        path = self.path
+        if '?' in path:
+            path, tmp = path.split('?', 1)
+            qs = urlparse.parse_qs(tmp)
+        print "Path: " + path
+        for key, value in qs.items():
+            print("{} : {}".format(key, value))
+
+        self.send_response(200, 'OK')
+        self.send_header('Content-type', 'html')
+        self.end_headers()
+        self.wfile.write(bytes(self.DUMMY_RESPONSE))
+        #self.wfile.write(bytes("<html> <head><title> Hello World </title> </head> <body>you just set homename to " + str(qs) + "</body> </html>", 'UTF-8'))
+
+    def log_request(self, code=None, size=None):
+        print('Request')
+
+    def log_message(self, format, *args):
+        print('Message')
+
+
+class updater(threading.Thread):
+    def __init__(self,):
+        threading.Thread.__init__(self)
+        commQueue.put(lambda: timer_toggle()) # for testing
+        commQueue.put(lambda: set_extra_text("I am Niklas")) # for testing
+    def run(self):
+        print "Starting " + self.name
+        checkQueue()
+        print "Exiting " + self.name
+        
+## CLASS END ##        
+
+def checkQueue():
+    while TRUE:
+        if exitFlag:
+            thread.exit()
+        time.sleep(0.01)
+        if not commQueue.empty():
+            f = commQueue.get()
+            f()
+            print "Lambda Done"
+        #else:
+            #print "Queue empty"
 
 def update_clock():
 	global time_elapsed
@@ -169,6 +250,13 @@ b_set_text = Button(admin, text="Set Extra Text", command=lambda: set_extra_text
 b_set_text.pack()
 e_extra_text.pack()
 
+#run
 
-# run
+# Create new threads
+updateThread = updater()
+serverThread = server()
+
+# Start new Threads
+updateThread.start()
+serverThread.start()
 mainloop()
