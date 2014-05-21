@@ -230,12 +230,11 @@ def resume_timer():
 	
 
 def draw_video(time_elapsed, home, guest, hscore, gscore, extra_text):
-        w.create_rectangle(0, 0, resolution[0], resolution[1], fill="#00ff00")
-
-        text = time_elapsed + " | " + home + ": " + str(hscore) + " | " + guest + ": " + str(gscore) + " " + extra_text
-        boxlength = int(len(text) * 6.9)
-	w.create_rectangle(50, 25, (50 + boxlength), 50, fill="light blue", outline="light blue")
-	w.create_text(60, 40, text=text, anchor="w")
+	w.create_rectangle(0, 0, resolution[0], resolution[1], fill="#00ff00")
+	text = time_elapsed + " | " + home + ": " + str(hscore) + " | " + guest + ": " + str(gscore) + " " + extra_text
+	boxlength = int(len(text) * 6.9 * 3.3)
+	w.create_rectangle(100, 40, (50 + boxlength), 85, fill="light blue", outline="light blue")
+	w.create_text(120, 60, font=("Nimbus Mono", 35, "bold"), text=text, anchor="w")
         
 def draw_address():
     """Draws the IP address in big font in the middle of the scren"""
