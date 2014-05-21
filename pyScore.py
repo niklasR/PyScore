@@ -19,7 +19,7 @@ time_started = time.gmtime()
 time_paused = time.gmtime() # not relevant as will be updated when timer actually paused
 timer_paused = True
 pause_iterations = 0 # see below for explanation
-resolution = (1024, 576)
+resolution = (1920, 1080)
 
 class server(threading.Thread):
     def __init__(self,):
@@ -53,6 +53,9 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             if key == "extratext":
                 set_extra_text(value[0])
             if key == "set_timer":
+                set_timer(value[0])
+                set_timer(value[0])
+                set_timer(value[0])
                 set_timer(value[0])
                 timer_set = value[0]
             if key == "timer_toggle":
@@ -94,14 +97,14 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             </head>
             <body style="width:95%;margin-left:auto;margin-right:auto;">
             <div class="page-header">
-              <h1>PyScore <small> A Python Score Board</small></h1>
+                <h1>PyScore <small> A Python Score Board</small></h1>
             </div>
             """
         if scorechanged:
             html+="""
             <div class="alert alert-success alert-dismissable">
-              <button type="button" class="close" data-dismiss="alert-success" aria-hidden="true">&times;</button>
-              <strong>Score changed!</strong> The new score is <strong>""" + str(homescore) + ":" + str(guestscore) + """</strong>
+                <button type="button" class="close" data-dismiss="alert-success" aria-hidden="true">&times;</button>
+                <strong>Score changed!</strong> The new score is <strong>""" + str(homescore) + ":" + str(guestscore) + """</strong>
             </div>
             """
         
@@ -144,7 +147,7 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
               <form class="form-inline" role="form" action="/" method="get">
                 <div class="form-group">
                   <label class="sr-only" for="minutes">Minutes</label>
-                  <input type="number" class="form-control" id="minutes" name="set_timer" placeholder="" value=""" + '"' +  timer_set + '"' + """>
+                  <input type="number" class="form-control" id="minutes" name="set_timer" placeholder="Full Minutes" value=""" + '"' +  timer_set + '"' + """>
                 </div>
                 <button type="submit" class="btn btn-default">Set Timer</button>
               </form>
@@ -176,14 +179,14 @@ def update_clock():
 def timer_toggle():
 	global timer_paused
 	if timer_paused:
-		resume_timer()
+            resume_timer()
 	else:
-		pause_timer()
+            pause_timer()
 		
 def set_timer(minutes):
 	global time_started
 	if not minutes:
-		minutes = 0
+            minutes = 0
 	seconds_time = calendar.timegm(time.gmtime()) # since epoch
 	time_started = time.gmtime(seconds_time - (int(minutes) * 60))
 	# toggle on/off to update display
@@ -205,10 +208,10 @@ def pause_timer():
 	timer_paused = True
 	video.after_cancel(clock_update_id)
 	if pause_iterations < 10: # after_cancel only works when id is set, not always the case (when clock just updated), therefore attempt 10 times over half a second.
-		video.after(50, pause_timer)
-		pause_iterations += 1
+            video.after(50, pause_timer)
+            pause_iterations += 1
 	else:
-		pause_iterations = 0
+            pause_iterations = 0
 
 def resume_timer():
 	global pauser_counter_id
@@ -216,14 +219,14 @@ def resume_timer():
 	global time_paused
 	global timer_paused
 	if timer_paused:
-		# increase time started by time paused
-		seconds_time = calendar.timegm(time.gmtime())
-		seconds_started = calendar.timegm(time_started)
-		seconds_paused = calendar.timegm(time_paused)
-		seconds_started = seconds_started + (seconds_time - seconds_paused)
-		time_started = time.gmtime(seconds_started)
-		update_clock()
-		timer_paused = False
+            # increase time started by time paused
+            seconds_time = calendar.timegm(time.gmtime())
+            seconds_started = calendar.timegm(time_started)
+            seconds_paused = calendar.timegm(time_paused)
+            seconds_started = seconds_started + (seconds_time - seconds_paused)
+            time_started = time.gmtime(seconds_started)
+            update_clock()
+            timer_paused = False
 	
 
 def draw_video(time_elapsed, home, guest, hscore, gscore, extra_text):
@@ -235,21 +238,22 @@ def draw_video(time_elapsed, home, guest, hscore, gscore, extra_text):
 	w.create_text(60, 40, text=text, anchor="w")
         
 def draw_address():
+    """Draws the IP address in big font in the middle of the scren"""
     w.create_text(20, (resolution[1]/2 - 20), font=("Consolas", 100, "bold"), text=(str(socket.gethostbyname(socket.gethostname())) + ":" + str(PORT)), anchor="w")
 
 def change_score(home, plus):
 	global homescore
 	global guestscore
 	if plus:
-		if home:
-			homescore += 1
-		else:
-			guestscore += 1
+            if home:
+                homescore += 1
+            else:
+                guestscore += 1
 	else:
-		if home:
-			homescore -= 1
-		else:
-			guestscore -= 1
+            if home:
+                homescore -= 1
+            else:
+                guestscore -= 1
 	draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
 		
 def set_guest(name):
@@ -273,6 +277,9 @@ admin = Tk()
 
 # Initialise Canvas
 w = Canvas(video, width=resolution[0], height=resolution[1])
+fw, fh = video.winfo_screenwidth(), video.winfo_screenheight()
+video.overrideredirect(1)
+video.geometry("%dx%d+0+0" % (fw, fh))
 w.pack()
 
 draw_video(time_elapsed, homename, guestname, homescore, guestscore, extra_text)
