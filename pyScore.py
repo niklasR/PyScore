@@ -4,6 +4,7 @@ import threading, Queue
 import SimpleHTTPServer, urlparse
 import SocketServer
 import socket
+import re
 
 
 
@@ -237,8 +238,13 @@ def draw_video(time_elapsed, home, guest, hscore, gscore, extra_text):
 	w.create_text(120, 60, font=("Nimbus Mono", 25, "bold"), text=text, anchor="w")
         
 def draw_address():
-    """Draws the IP address in big font in the middle of the scren"""
-    w.create_text(20, (resolution[1]/2 - 20), font=("Consolas", 100, "bold"), text=(str(socket.gethostbyname(socket.gethostname())) + ":" + str(PORT)), anchor="w")
+	"""Draws the IP address in big font in the middle of the scren"""
+	ip = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
+	ip_pattern = re.compile("\b(?:\d{1,3}\.){3}\d{1,3}\b")
+	if not ip_pattern.match(ip) == None:
+		w.create_text(20, (resolution[1]/2 - 20), font=("Consolas", 100, "bold"), text=(ip + ":" + str(PORT)), anchor="w")
+	else:
+		w.create_text(20, (resolution[1]/2 - 20), font=("Consolas", 100, "bold"), text=(str(socket.gethostbyname(socket.gethostname())) + ":" + str(PORT)), anchor="w")
 
 def change_score(home, plus):
 	global homescore
